@@ -62,12 +62,13 @@ def launch_attack():  # Implement this
     # Add your own attack code below.
     
     # <START ATTACK CODE>
-    
-    # Add your poisoning attack code here ...
 
+    # Add your poisoning attack code here ...
+    train_data['default payment next month'] = train_data.apply(lambda x: 1 - x['default payment next month'], axis=1)
+    
+    # train_data = int(train_data['default payment next month'])
     # <END ATTACK CODE, leave code below unchanged>
     
-
     payload = train_data.to_dict("records")
     payload.insert(0, {"UID": UID})
 
