@@ -48,7 +48,7 @@ def preprocess_data(train_data_dict, test_data_dict):
     train_labels = np.array(train_labels)
     train_labels = to_categorical(train_labels, 10)
     test_labels = np.array(test_labels)
-    test_labels = to_categorical(train_labels, 10)
+    test_labels = to_categorical(test_labels, 10)
     return train_data, train_labels, test_data, test_labels
 
 
