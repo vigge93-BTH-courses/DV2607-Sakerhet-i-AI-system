@@ -6,6 +6,7 @@ import json
 import pandas as pd
 import requests
 
+POISON_FRACTION = 0.75
 UID = 2607
 COMMANDS = ["-a", "-e", "-h", "-m", "-r", "-t"]
 example_input = [
@@ -62,8 +63,8 @@ def launch_attack():  # Implement this
     # Add your own attack code below.
     
     # <START ATTACK CODE>
-
     # Add your poisoning attack code here ...
+    train_data = train_data.sample(frac=POISON_FRACTION, random_state=10) # Added for 1.5.1
     train_data['default payment next month'] = train_data.apply(lambda x: 1 - x['default payment next month'], axis=1)
     
     # train_data = int(train_data['default payment next month'])
