@@ -49,3 +49,4 @@ def preprocess_data(train_data_dict, test_data_dict):
 
 if __name__ == '__main__':
     data = getCifar10()
+    
