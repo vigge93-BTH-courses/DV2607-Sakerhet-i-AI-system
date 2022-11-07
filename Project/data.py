@@ -1,6 +1,7 @@
 # ignore: E501
 import pickle
 import numpy as np
+from keras.utils.np_utils import to_categorical
 
 
 def unpickle(file: str):
@@ -14,7 +15,7 @@ def getCifar10():
     train_filenames = (f'data_batch_{i}' for i in range(1, 6))
     train_data = {}
     for filename in train_filenames:
-        loaded_data = unpickle(f'datasets/cifar-10-original/{filename}')
+        loaded_data = unpickle(f'Project/datasets/cifar-10-original/{filename}')
         if 'data' in train_data:
             train_data['data'] = np.concatenate((train_data['data'], loaded_data[b'data']), axis=0)
             train_data['labels'] += loaded_data[b'labels']
@@ -25,7 +26,7 @@ def getCifar10():
     # Then load test data
     test_filename = 'test_batch'
     test_data = {}
-    loaded_data = unpickle(f'datasets/cifar-10-original/{test_filename}')
+    loaded_data = unpickle(f'Project/datasets/cifar-10-original/{test_filename}')
     test_data['data'] = loaded_data[b'data']
     test_data['labels'] = loaded_data[b'labels']
 
@@ -44,9 +45,12 @@ def preprocess_data(train_data_dict, test_data_dict):
     train_data = np.moveaxis(train_data, 1, -1)
     test_data = np.reshape(test_data, (len(test_data), 3, 32, 32))
     test_data = np.moveaxis(test_data, 1, -1)
+    train_labels = np.array(train_labels)
+    train_labels = to_categorical(train_labels, 10)
+    test_labels = np.array(test_labels)
+    test_labels = to_categorical(train_labels, 10)
     return train_data, train_labels, test_data, test_labels
 
 
 if __name__ == '__main__':
     data = getCifar10()
-    
