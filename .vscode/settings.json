@@ -1,3 +1,6 @@
 {
-    "python.analysis.typeCheckingMode": "strict"
+    "python.analysis.typeCheckingMode": "basic",
+    "git.ignoreLimitWarning": true,
+    "python.linting.pycodestyleEnabled": true,
+    "python.linting.enabled": true
 }
