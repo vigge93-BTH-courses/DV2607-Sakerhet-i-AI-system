@@ -33,5 +33,19 @@ def getCifar10():
     return {'train_data': train_data, 'test_data': test_data}
 
 
+def preprocess_data(train_data_dict, test_data_dict):
+    train_labels = train_data_dict['labels']
+    train_data = train_data_dict['data']
+    test_labels = test_data_dict['labels']
+    test_data = test_data_dict['data']
+    train_data = train_data / 255.
+    test_data = test_data / 255.
+    train_data = np.reshape(train_data, (len(train_data), 3, 32, 32))
+    train_data = np.moveaxis(train_data, 1, -1)
+    test_data = np.reshape(test_data, (len(test_data), 3, 32, 32))
+    test_data = np.moveaxis(test_data, 1, -1)
+    return train_data, train_labels, test_data, test_labels
+
+
 if __name__ == '__main__':
     data = getCifar10()
