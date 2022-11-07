@@ -1,25 +1,35 @@
 from keras import models
-from keras.layers import Input, Conv2D, MaxPooling2D, Dropout, AveragePooling2D, Flatten, Softmax, GlobalAveragePooling2D
+from keras.layers import Input, Conv2D, MaxPooling2D, Dropout, AveragePooling2D, Flatten, Softmax, GlobalAveragePooling2D, BatchNormalization
 from data import getCifar10, preprocess_data
 import tensorflow as tf
 
 
 def getModel():
+    L2 = 0.0001
     inputs = Input(shape=(32, 32, 3))
-    conv1 = Conv2D(192, padding='same', kernel_size=5, input_shape=(32, 32, 3))(inputs)
-    conv2 = Conv2D(160, padding='same', kernel_size=1)(conv1)
-    conv3 = Conv2D(96, padding='same', kernel_size=1)(conv2)
-    maxpool1 = MaxPooling2D(pool_size=3, strides=2, padding='same')(conv3)
+    conv1 = Conv2D(192, padding='same', kernel_size=5, input_shape=(32, 32, 3), activation='relu', kernel_regularizer=tf.keras.regularizers.l2(L2))(inputs)
+    norm1 = BatchNormalization()(conv1)
+    conv2 = Conv2D(160, padding='same', kernel_size=1, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(L2))(norm1)
+    norm2 = BatchNormalization()(conv2)
+    conv3 = Conv2D(96, padding='same', kernel_size=1, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(L2))(norm2)
+    norm3 = BatchNormalization()(conv3)
+    maxpool1 = MaxPooling2D(pool_size=3, strides=2, padding='same')(norm3)
     dropout1 = Dropout(0.5)(maxpool1)
-    conv4 = Conv2D(192, padding='same', kernel_size=5)(dropout1)
-    conv5 = Conv2D(192, padding='same', kernel_size=5)(conv4)
-    conv6 = Conv2D(192, padding='same', kernel_size=5)(conv5)
-    avgpool1 = AveragePooling2D(pool_size=3, strides=2, padding='same')(conv6)
+    conv4 = Conv2D(192, padding='same', kernel_size=5, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(L2))(dropout1)
+    norm4 = BatchNormalization()(conv4)
+    conv5 = Conv2D(192, padding='same', kernel_size=5, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(L2))(norm4)
+    norm5 = BatchNormalization()(conv5)
+    conv6 = Conv2D(192, padding='same', kernel_size=5, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(L2))(norm5)
+    norm6 = BatchNormalization()(conv6)
+    avgpool1 = AveragePooling2D(pool_size=3, strides=2, padding='same')(norm6)
     dropout2 = Dropout(0.5)(avgpool1)
-    conv7 = Conv2D(192, padding='same', kernel_size=3)(dropout2)
-    conv8 = Conv2D(192, padding='same', kernel_size=1)(conv7)
-    conv9 = Conv2D(10, padding='same', kernel_size=1)(conv8)
-    avgpool2 = GlobalAveragePooling2D()(conv9)
+    conv7 = Conv2D(192, padding='same', kernel_size=3, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(L2))(dropout2)
+    norm7 = BatchNormalization()(conv7)
+    conv8 = Conv2D(192, padding='same', kernel_size=1, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(L2))(norm7)
+    norm8 = BatchNormalization()(conv8)
+    conv9 = Conv2D(10, padding='same', kernel_size=1, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(L2))(norm8)
+    norm9 = BatchNormalization()(conv9)
+    avgpool2 = GlobalAveragePooling2D()(norm9)
     flatten = Flatten()(avgpool2)
     softmax = Softmax()(flatten)
 
@@ -36,9 +46,14 @@ def fit(model: models.Model, train_data, train_labels, test_data, test_labels):
     return history
 
 
+def saveModel(model: models.Model, filepath: str):
+    model.save(filepath=filepath)
+
+
 if __name__ == '__main__':
     data = getCifar10()
     train_data, train_lables, test_data, test_labels = preprocess_data(data['train_data'], data['test_data'])
     nin_model = getModel()
     history = fit(nin_model, train_data, train_lables, test_data, test_labels)
+    saveModel(nin_model, 'Project/models/nin')
     print(history.history)
