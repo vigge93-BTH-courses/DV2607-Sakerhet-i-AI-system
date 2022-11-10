@@ -4,7 +4,7 @@ from data import getCifar10, preprocess_data
 import tensorflow as tf
 
 
-def getModel():
+def getModelVGG16():
     L2 = 0.0005
     inputs = Input(shape=(32, 32, 3))
     conv1 = Conv2D(64, kernel_size=3, padding='same', activation='relu', kernel_regularizer=tf.keras.regularizers.l2(L2), input_shape=(32, 32, 3))(inputs)
@@ -65,7 +65,7 @@ def saveModel(model: models.Model, filepath: str):
 if __name__ == '__main__':
     data = getCifar10()
     train_data, train_lables, test_data, test_labels = preprocess_data(data['train_data'], data['test_data'])
-    vgg16_model = getModel()
+    vgg16_model = getModelVGG16()
     history = fit(vgg16_model, train_data, train_lables, test_data, test_labels)
     saveModel(vgg16_model, 'Project/models/vgg16')
     print(history.history)
