@@ -5,7 +5,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 
-def getModel():
+def getModelNiN():
     L2 = 0.0001
     inputs = Input(shape=(32, 32, 3))
     conv1 = Conv2D(192, padding='same', kernel_size=5, input_shape=(32, 32, 3), activation='relu', kernel_regularizer=tf.keras.regularizers.l2(L2))(inputs)
@@ -53,8 +53,7 @@ def saveModel(model: models.Model, filepath: str):
 
 if __name__ == '__main__':
     train_data, train_lables, test_data, test_labels = getCifar10()
-    #  = preprocess_data(data['train_data'], data['test_data'])
-    nin_model = getModel()
+    nin_model = getModelNiN()
     history = fit(nin_model, train_data, train_lables, test_data, test_labels)
     saveModel(nin_model, 'Project/models/nin')
     plt.plot(history.history['accuracy'], label='accuracy')
