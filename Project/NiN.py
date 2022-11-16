@@ -1,7 +1,8 @@
 from keras import models
 from keras.layers import Input, Conv2D, MaxPooling2D, Dropout, AveragePooling2D, Flatten, Softmax, GlobalAveragePooling2D, BatchNormalization
-from data import getCifar10, preprocess_data
+from data import getCifar10
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 
 def getModelNiN():
@@ -51,9 +52,14 @@ def saveModel(model: models.Model, filepath: str):
 
 
 if __name__ == '__main__':
-    data = getCifar10()
-    train_data, train_lables, test_data, test_labels = preprocess_data(data['train_data'], data['test_data'])
+    train_data, train_lables, test_data, test_labels = getCifar10()
     nin_model = getModelNiN()
     history = fit(nin_model, train_data, train_lables, test_data, test_labels)
     saveModel(nin_model, 'Project/models/nin')
-    print(history.history)
+    plt.plot(history.history['accuracy'], label='accuracy')
+    plt.plot(history.history['val_accuracy'], label='val_accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.ylim([0.5, 1])
+    plt.legend(loc='lower right')
+    plt.show()
