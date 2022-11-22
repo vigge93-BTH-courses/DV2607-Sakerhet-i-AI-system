@@ -6,7 +6,7 @@ import json
 import pandas as pd
 import requests
 
-POISON_FRACTION = 0.75
+POISON_FRACTION = 0.9
 UID = 2607
 COMMANDS = ["-a", "-e", "-h", "-m", "-r", "-t"]
 example_input = [
@@ -37,9 +37,9 @@ example_input = [
 ]
 multiple_example_inputs = [
     {"UID": UID},
-    {"LIMIT_BAL": 1,"AGE": 2,"PAY_0": 3,"PAY_2": 4,"PAY_3": 5,"PAY_4": 6,"PAY_5": 7,"PAY_6": 8,"BILL_AMT1": 9,"BILL_AMT2": 10,"BILL_AMT3": 11,"BILL_AMT4": 12,"BILL_AMT5": 13,"BILL_AMT6": 14,"PAY_AMT1": 15,"PAY_AMT2": 16,"PAY_AMT3": 17,"PAY_AMT4": 18,"PAY_AMT5": 19,"PAY_AMT6": 20,"default payment next month": 0},
-    {"LIMIT_BAL": 1,"AGE": 2,"PAY_0": 3,"PAY_2": 4,"PAY_3": 5,"PAY_4": 6,"PAY_5": 7,"PAY_6": 8,"BILL_AMT1": 9,"BILL_AMT2": 10,"BILL_AMT3": 11,"BILL_AMT4": 12,"BILL_AMT5": 13,"BILL_AMT6": 14,"PAY_AMT1": 15,"PAY_AMT2": 16,"PAY_AMT3": 17,"PAY_AMT4": 18,"PAY_AMT5": 19,"PAY_AMT6": 20,"default payment next month": 1}
-]    
+    {"LIMIT_BAL": 1, "AGE": 2, "PAY_0": 3, "PAY_2": 4, "PAY_3": 5, "PAY_4": 6, "PAY_5": 7, "PAY_6": 8, "BILL_AMT1": 9, "BILL_AMT2": 10, "BILL_AMT3": 11, "BILL_AMT4": 12, "BILL_AMT5": 13, "BILL_AMT6": 14, "PAY_AMT1": 15, "PAY_AMT2": 16, "PAY_AMT3": 17, "PAY_AMT4": 18, "PAY_AMT5": 19, "PAY_AMT6": 20, "default payment next month": 0},
+    {"LIMIT_BAL": 1, "AGE": 2, "PAY_0": 3, "PAY_2": 4, "PAY_3": 5, "PAY_4": 6, "PAY_5": 7, "PAY_6": 8, "BILL_AMT1": 9, "BILL_AMT2": 10, "BILL_AMT3": 11, "BILL_AMT4": 12, "BILL_AMT5": 13, "BILL_AMT6": 14, "PAY_AMT1": 15, "PAY_AMT2": 16, "PAY_AMT3": 17, "PAY_AMT4": 18, "PAY_AMT5": 19, "PAY_AMT6": 20, "default payment next month": 1}
+]
 
 PATHS = {
     "original_data": "data/data.csv",
@@ -50,6 +50,7 @@ PATHS = {
     "model_metadata": "models/model_metadata.ini"
 }
 
+
 def launch_attack():  # Implement this
     """ python client.py -a
     Launches a data poisoning attack on the server by feeding it with
@@ -58,13 +59,13 @@ def launch_attack():  # Implement this
     # Read legitimate data
     train_data = pd.read_csv(PATHS["train_data"])
 
-    # Example of code that changes the first feature in the data to integer 
+    # Example of code that changes the first feature in the data to integer
     # value 42 looks as follows: train_data["LIMIT_BAL"] = 42
     # Add your own attack code below.
     
     # <START ATTACK CODE>
     # Add your poisoning attack code here ...
-    train_data = train_data.sample(frac=POISON_FRACTION, random_state=10) # Added for 1.5.1
+    train_data = train_data.sample(frac=POISON_FRACTION, random_state=10)  # Added for 1.5.1
     train_data['default payment next month'] = train_data.apply(lambda x: 1 - x['default payment next month'], axis=1)
     
     # train_data = int(train_data['default payment next month'])
@@ -144,12 +145,6 @@ def print_usage():
 def reset_state():
     """ python client.py -r
     Resets the machine learning model and it's stored data on the server. """
-    
-    #answer = input("Are you sure you want to reset the server's machine "
-    #               "learning model and it's stored data? [y/N] ")
-    #if answer != 'y':
-    #    print("Aborting!")
-    #    return
 
     r = requests.post("http://localhost:5000/reset")
 
@@ -179,7 +174,7 @@ if len(sys.argv) < 2 or sys.argv[1] not in COMMANDS:
 elif sys.argv[1] == '-a':
     launch_attack()
 elif sys.argv[1] == '-e':
-    #submit_data(example_input)
+    # submit_data(example_input)
     submit_data(multiple_example_inputs)
 elif sys.argv[1] == '-h':
     print_usage()

@@ -1,3 +1,4 @@
+from copy import deepcopy
 import warnings
 import configparser
 from datetime import datetime
@@ -21,6 +22,7 @@ PATHS = {
 }
 
 duplicates = 0
+
 
 def get_dataset():
     """"""
@@ -119,22 +121,50 @@ def store_data(submitted_data):
 
     failed_entries = 0
     train_data = get_train_data(x_y_split=False)
+    train_data_new = pd.DataFrame()
 
-    print( "Added, but duplicate entry(s) existed in the data:", end="", flush=True)
+    print("Added, but duplicate entry(s) existed in the data:", end="", flush=True)
     duplicates = 0
     for entry in submitted_data[1:]:
         try:
             validated_entry = _validate_input(entry, train_data)
-            train_data = pd.concat([train_data, pd.DataFrame.from_records([validated_entry]) ] )
+            train_data_new = pd.concat([train_data_new, pd.DataFrame.from_records([validated_entry])])
         except Exception as e:
             failed_entries += 1
             print(e)
 
+    if detect_poison(train_data_new, 0.01):
+        print('\nData is poisoned!')
+        return len(submitted_data[1:])
+    train_data = pd.concat([train_data, train_data_new]) 
     count = len(submitted_data)
     print("| %d/%d (%.2f %%)" % (duplicates, count, (duplicates/count)*100 ) )
     train_data.to_csv(PATHS["train_data"], index=False)
 
     return failed_entries
+
+
+def detect_poison(train_data_new, eps):
+    clf: RandomForestClassifier = None
+    try:
+        with open(PATHS["latest_model"], "rb") as model_file:
+            clf: RandomForestClassifier = pickle.load(model_file)
+    except FileNotFoundError:
+        with open(PATHS["original_model"], "rb") as model_file:
+            clf: RandomForestClassifier = pickle.load(model_file)
+    X_test, y_test = get_test_data()
+    original_score = clf.score(X_test, y_test)
+    copy_clf = deepcopy(clf)
+
+    X_train, y_train = get_train_data()
+    new_X_train = train_data_new.drop(columns=['default payment next month'])
+    new_y_train = train_data_new['default payment next month']
+    new_X_train = pd.concat([X_train, new_X_train])
+    new_y_train = pd.concat([y_train, new_y_train])
+    copy_clf.fit(new_X_train, new_y_train)
+    new_score = copy_clf.score(X_test, y_test)
+    acc_diff = new_score - original_score
+    return acc_diff < -eps
 
 
 def train_and_save_model(reset=False):
