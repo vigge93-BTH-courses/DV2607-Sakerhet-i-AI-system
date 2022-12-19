@@ -1,6 +1,6 @@
 from keras import models
 from keras.layers import Input, Conv2D, MaxPooling2D, Dense, Flatten, Softmax, BatchNormalization
-from data import getCifar10, preprocess_data
+from data import getCifar10, saveModel
 import tensorflow as tf
 
 
@@ -58,13 +58,9 @@ def fit(model: models.Model, train_data, train_labels, test_data, test_labels):
     return history
 
 
-def saveModel(model: models.Model, filepath: str):
-    model.save(filepath=filepath)
-
-
 if __name__ == '__main__':
-    data = getCifar10()
-    train_data, train_lables, test_data, test_labels = preprocess_data(data['train_data'], data['test_data'])
+    train_data, train_lables, test_data, test_labels = getCifar10()
+    # train_data, train_lables, test_data, test_labels = preprocess_data(data['train_data'], data['test_data'])
     vgg16_model = getModelVGG16()
     history = fit(vgg16_model, train_data, train_lables, test_data, test_labels)
     saveModel(vgg16_model, 'Project/models/vgg16')
