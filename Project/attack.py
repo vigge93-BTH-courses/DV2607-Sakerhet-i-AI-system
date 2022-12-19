@@ -20,11 +20,10 @@ def attack(models: "dict[str, models.Model]", test_data: "np.ndarray", test_labe
             originalPrediction = np.argmax(models[model].predict(np.array([image])))
 
             attacked = perturbImage(image, label, models[model])
-
-            plt.imsave(f'images/{model}/{imageId}_label_{label}.png', attacked)
-            np.save(f'data/{model}/{imageId}.np', attacked)
-
             attackedPrediction = np.argmax(models[model].predict(np.array([attacked])))
+
+            plt.imsave(f'images/{model}/{imageId}_label_{attackedPrediction}.png', attacked)
+            np.save(f'data/{model}/{imageId}.np', attacked)
 
             print(f'Image: {imageId}, Model: {model}, Original: {originalPrediction}, Attacked: {attackedPrediction}')
 
