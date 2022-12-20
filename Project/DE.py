@@ -15,7 +15,7 @@ def perturbImage(image, label, model: models.Model):
         return predictions[0][label]
 
     bounds = [(0, 32), (0, 32), (0, 1), (0, 1), (0, 1)]
-    result = differential_evolution(func=getModelStat, bounds=bounds, maxiter=75, popsize=80, recombination=1, atol=-1, polish=False)
+    result = differential_evolution(func=getModelStat, bounds=bounds, maxiter=75, recombination=1, atol=-1, popsize=80, polish=False)
     return getPerturbImage(result.x)
 
 

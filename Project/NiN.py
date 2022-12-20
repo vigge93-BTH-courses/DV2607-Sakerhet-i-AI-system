@@ -43,7 +43,7 @@ def getModelNiN():
 
 
 def fit(model: models.Model, train_data, train_labels, test_data, test_labels):
-    history = model.fit(train_data, train_labels, epochs=200, batch_size=128, validation_data=(test_data, test_labels))
+    history = model.fit(train_data, train_labels, epochs=2, batch_size=128, validation_data=(test_data, test_labels))
     return history
 
 

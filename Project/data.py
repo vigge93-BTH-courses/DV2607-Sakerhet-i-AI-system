@@ -4,6 +4,7 @@ import numpy as np
 from keras.utils.np_utils import to_categorical
 from keras.datasets import cifar10
 from keras import models
+import tensorflow as tf
 
 
 def unpickle(file: str):
@@ -26,6 +27,10 @@ def getCifar10() -> "tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]":
 
 def saveModel(model: models.Model, filepath: str):
     model.save(filepath=filepath)
+
+
+def loadModel(filepath):
+    return tf.keras.models.load_model(filepath)
 
 
 if __name__ == '__main__':
