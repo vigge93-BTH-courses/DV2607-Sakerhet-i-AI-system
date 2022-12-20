@@ -3,9 +3,9 @@ import numpy as np
 from keras.preprocessing.image import ImageDataGenerator
 
 
-def getSmoothedImage(image):
+def getSmoothedImage(images):
     ss_filter = SpatialSmoothingTensorFlowV2(window_size=3)
-    ss_image, _ = ss_filter(np.array([image]))
+    ss_image, _ = ss_filter(images)
     return ss_image
 
 
@@ -32,4 +32,7 @@ if __name__ == '__main__':
     plt.show()
     noise, labels = GaussianNoise(np.array([img]), None, False)
     plt.imshow(noise[0])
+    plt.show()
+    smooth = getSmoothedImage(img)
+    plt.imshow(smooth[0])
     plt.show()

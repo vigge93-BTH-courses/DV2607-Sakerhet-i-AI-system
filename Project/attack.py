@@ -32,10 +32,10 @@ def attack(models: "dict[str, models.Model]", test_data: "np.ndarray", test_labe
             plt.imsave(f'images/{model}/{imageId}_label_{attackedPrediction}.png', attacked)
             np.save(f'data/{model}/{imageId}.np', attacked)
 
-            smoothed = getSmoothedImage(attacked)
-            smoothedPrediction = np.argmax(models[model].predict(np.array([smoothed])))
-            plt.imsave(f'images/{model}/{imageId}_label_{smoothedPrediction}_smoothed.png', smoothed)
-            np.save(f'data/{model}/{imageId}_smoothed.np', smoothed)
+            smoothed = getSmoothedImage(np.array([attacked]))
+            smoothedPrediction = np.argmax(models[model].predict(smoothed))
+            plt.imsave(f'images/{model}/{imageId}_label_{smoothedPrediction}_smoothed.png', smoothed[0])
+            np.save(f'data/{model}/{imageId}_smoothed.np', smoothed[0])
 
             noised, _ = GaussianNoise(np.array([attacked]), None, False)
             noisedPrediction = np.argmax(models[model].predict(noised))
