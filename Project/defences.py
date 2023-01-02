@@ -14,7 +14,7 @@ def ImageAugmentation(x_train, y_train, x_test, y_test):
     # datagen.fit(x_train)
 
     def fit_model(model):
-        model.fit(datagen.flow(x_train, y_train, batch_size=128), steps_per_epoch=len(x_train) / 128, epochs=10, validation_data=(x_test, y_test))
+        model.fit(datagen.flow(x_train, y_train, batch_size=128), steps_per_epoch=len(x_train) / 128, epochs=70, validation_data=(x_test, y_test))
         return model
     return fit_model
 

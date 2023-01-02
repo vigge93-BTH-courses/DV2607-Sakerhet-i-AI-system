@@ -30,7 +30,7 @@ def getModelCNN(summary=False):
 
 
 def fit(model: models.Model, x_train, y_train, x_test, y_test):
-    history = model.fit(x_train, y_train, epochs=2, validation_data=(x_test, y_test), batch_size=128)
+    history = model.fit(x_train, y_train, epochs=100, validation_data=(x_test, y_test), batch_size=128)
     return history
 
 

@@ -1,4 +1,6 @@
-from scipy.optimize import differential_evolution
+#from scipy.optimize import differential_evolution
+#from differential_evolution import differential_evolution
+from sci_differential_evolution import differential_evolution
 import numpy as np
 from keras import models
 
@@ -11,11 +13,12 @@ def perturbImage(image, label, model: models.Model):
 
     def getModelStat(perturb):
         new_image = getPerturbImage(perturb)
-        predictions = model.predict(np.array([new_image]), )
+        predictions = model.predict(np.array([new_image]), verbose=0)
         return predictions[0][label]
 
     bounds = [(0, 32), (0, 32), (0, 1), (0, 1), (0, 1)]
-    result = differential_evolution(func=getModelStat, bounds=bounds, maxiter=75, recombination=1, atol=-1, popsize=80, polish=False)
+    result = differential_evolution(func=getModelStat, bounds=bounds, maxiter=75, recombination=1, atol=-1, popsize=80, polish=False, disp=False)
+
     return getPerturbImage(result.x)
 
 
@@ -33,6 +36,7 @@ if __name__ == '__main__':
     # saveModel(model, 'NiN_trained.model')
     pre_attack = model.predict(np.array([img]))
     attacked = perturbImage(img, 8, model)
+
     post_attack = model.predict(np.array([attacked]))
     plt.imshow(attacked)
     plt.show()

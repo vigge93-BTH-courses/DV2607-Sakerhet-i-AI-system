@@ -12,41 +12,45 @@ from os import makedirs
 
 
 def attack(models: "dict[str, models.Model]", test_data: "np.ndarray", test_labels: "np.ndarray"):
-    for imageId in np.random.choice(np.arange(len(test_data)), size=100, replace=False):
-        image = test_data[imageId]
-        label = np.argmax(test_labels[imageId])
+    for model in models:
+        print(f'Model: {model}')
+        print('=' * 25)
+        print(f'Model stats: {models[model].evaluate(test_data, test_labels, verbose="0")}')
+        print('=' * 25)
+        for imageId in (2033, 5919, 1914, 2661, 5781, 9397, 4555, 5397, 8293, 1598):
+            image = test_data[imageId]
+            originalPrediction = np.argmax(models[model].predict(np.array([image]), verbose=0))
+            print(f'ImageId: {imageId}, Original: {originalPrediction},')
+        print('=' * 25)
+        # label = np.argmax(test_labels[imageId])
 
-        makedirs(f'data/original/', exist_ok=True)
-        makedirs(f'images/original/', exist_ok=True)
+        # makedirs(f'data/original/', exist_ok=True)
+        # makedirs(f'images/original/', exist_ok=True)
 
-        plt.imsave(f'images/original/{imageId}_label_{label}.png', image)
-        np.save(f'data/original/{imageId}', image)
+        # plt.imsave(f'images/original/{imageId}_label_{label}.png', image)
+        # np.save(f'data/original/{imageId}', image)
 
-        for model in models:
-            makedirs(f'data/{model}/', exist_ok=True)
-            makedirs(f'images/{model}/', exist_ok=True)
-            originalPrediction = np.argmax(models[model].predict(np.array([image])))
+            # makedirs(f'data/{model}/', exist_ok=True)
+            # makedirs(f'images/{model}/', exist_ok=True)
+            # attacked = perturbImage(image, label, models[model])
+            # attackedPrediction = np.argmax(models[model].predict(np.array([attacked]), verbose=0))
+            # plt.imsave(f'images/{model}/{imageId}_label_{attackedPrediction}.png', attacked)
+            # np.save(f'data/{model}/{imageId}.np', attacked)
 
-            attacked = perturbImage(image, label, models[model])
-            attackedPrediction = np.argmax(models[model].predict(np.array([attacked])))
-            plt.imsave(f'images/{model}/{imageId}_label_{attackedPrediction}.png', attacked)
-            np.save(f'data/{model}/{imageId}.np', attacked)
+            # smoothed = getSmoothedImage(np.array([attacked]))
+            # smoothedPrediction = np.argmax(models[model].predict(smoothed, verbose=0))
+            # plt.imsave(f'images/{model}/{imageId}_label_{smoothedPrediction}_smoothed.png', smoothed[0])
+            # np.save(f'data/{model}/{imageId}_smoothed.np', smoothed[0])
 
-            smoothed = getSmoothedImage(np.array([attacked]))
-            smoothedPrediction = np.argmax(models[model].predict(smoothed))
-            plt.imsave(f'images/{model}/{imageId}_label_{smoothedPrediction}_smoothed.png', smoothed[0])
-            np.save(f'data/{model}/{imageId}_smoothed.np', smoothed[0])
+            # noised, _ = GaussianNoise(np.array([attacked]), None, False)
+            # noisedPrediction = np.argmax(models[model].predict(noised, verbose=0))
+            # plt.imsave(f'images/{model}/{imageId}_label_{noisedPrediction}_noised.png', noised[0])
+            # np.save(f'data/{model}/{imageId}_noised.np', noised[0])
 
-            noised, _ = GaussianNoise(np.array([attacked]), None, False)
-            noisedPrediction = np.argmax(models[model].predict(noised))
-            plt.imsave(f'images/{model}/{imageId}_label_{noisedPrediction}_noised.png', noised[0])
-            np.save(f'data/{model}/{imageId}_noised.np', noised[0])
-
-            print(f'Image: {imageId}, Label: {label}, Model: {model}, Original: {originalPrediction}, Attacked: {attackedPrediction}, Smoothed: {smoothedPrediction}, Noised: {noisedPrediction}')
+            # print(f'Image: {imageId}, Label: {label}, Model: {model}, Original: {originalPrediction}, Attacked: {attackedPrediction}, Smoothed: {smoothedPrediction}, Noised: {noisedPrediction}')
 
 
 if __name__ == '__main__':
-    print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
     train_data, train_labels, test_data, test_labels = getCifar10()
     # CNNModel = CNN.getModelCNN()
@@ -81,7 +85,7 @@ if __name__ == '__main__':
     # VGG16Model_augmentation = fit_augmentataion(VGG16Model_augmentation)
     # saveModel(VGG16Model_augmentation, 'model/VGG16Model_augmented')
 
-    gaussian_noise_train_data, gaussian_noise_train_labels = GaussianNoise(train_data, train_labels)
+    # gaussian_noise_train_data, gaussian_noise_train_labels = GaussianNoise(train_data, train_labels)
 
     # CNN.fit(CNNModel_gaussian, gaussian_noise_train_data, gaussian_noise_train_labels, test_data, test_labels)
     # saveModel(CNNModel_gaussian, 'model/CNNModel_gaussian')
@@ -100,9 +104,9 @@ if __name__ == '__main__':
     VGG16Model_augmentation = loadModel('model/VGG16Model_augmented')
     CNNModel_gaussian = loadModel('model/CNNModel_gaussian')
     NiNModel_gaussian = loadModel('model/NiNModel_gaussian')
-    #VGG16Model_gaussian = loadModel('model/VGG16Model_gaussian') // Det gick inte att ladda in modellen
+    VGG16Model_gaussian = loadModel('model/VGG16Model_gaussian')  # Det gick inte att ladda in modellen
 
-    #'VGG16_Gaussian': VGG16Model_gaussian
+    
 
     attack({
         'CNN': CNNModel,
@@ -112,6 +116,7 @@ if __name__ == '__main__':
         'NiN_Augmented': NiNModel_augmentation,
         'VGG16_Augmented': VGG16Model_augmentation,
         'CNN_Gaussian': CNNModel_gaussian,
-        'NiN_Gaussian': NiNModel_gaussian
+        'NiN_Gaussian': NiNModel_gaussian,
+        'VGG16_Gaussian': VGG16Model_gaussian
 
     }, test_data, test_labels)
