@@ -23,6 +23,7 @@ def GaussianNoise(images, lables, fit=True):
     ga = GaussianAugmentation(sigma=0.05, augmentation=fit, clip_values=(0, 1), apply_fit=fit, apply_predict=(not fit), ratio=0.5)
     return ga(images, lables)
 
+
 if __name__ == '__main__':
     from data import getCifar10
     import matplotlib.pyplot as plt

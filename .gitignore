@@ -1,5 +1,7 @@
 *.pyc
 env
 venv
-säkerhet-backup/
 model/
+data/**/*.npy
+images/**/*.png
+results.csv

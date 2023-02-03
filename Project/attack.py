@@ -7,47 +7,54 @@ import numpy as np
 from defences import getSmoothedImage, ImageAugmentation, GaussianNoise
 import matplotlib.pyplot as plt
 from keras import models
-import tensorflow as tf
 from os import makedirs
+import time
 
 
 def attack(models: "dict[str, models.Model]", test_data: "np.ndarray", test_labels: "np.ndarray"):
-    for model in models:
-        print(f'Model: {model}')
-        print('=' * 25)
-        print(f'Model stats: {models[model].evaluate(test_data, test_labels, verbose="0")}')
-        print('=' * 25)
-        for imageId in (2033, 5919, 1914, 2661, 5781, 9397, 4555, 5397, 8293, 1598):
+    with open('results.csv', 'a') as results_csv:
+        print('ImageId,Label,ModelName,OriginalPrediction,AttackedPrediction,SmoothedPrediction,NoisedPrediction,Time', file=results_csv)
+        for imageId in np.random.choice(np.arange(len(test_data)), size=100, replace=False):
             image = test_data[imageId]
-            originalPrediction = np.argmax(models[model].predict(np.array([image]), verbose=0))
-            print(f'ImageId: {imageId}, Original: {originalPrediction},')
-        print('=' * 25)
-        # label = np.argmax(test_labels[imageId])
+            label = np.argmax(test_labels[imageId])
 
-        # makedirs(f'data/original/', exist_ok=True)
-        # makedirs(f'images/original/', exist_ok=True)
+            makedirs(f'data/original/', exist_ok=True)
+            makedirs(f'images/original/', exist_ok=True)
 
-        # plt.imsave(f'images/original/{imageId}_label_{label}.png', image)
-        # np.save(f'data/original/{imageId}', image)
+            plt.imsave(f'images/original/{imageId}_label_{label}.png', image)
+            np.save(f'data/original/{imageId}', image)
 
-            # makedirs(f'data/{model}/', exist_ok=True)
-            # makedirs(f'images/{model}/', exist_ok=True)
-            # attacked = perturbImage(image, label, models[model])
-            # attackedPrediction = np.argmax(models[model].predict(np.array([attacked]), verbose=0))
-            # plt.imsave(f'images/{model}/{imageId}_label_{attackedPrediction}.png', attacked)
-            # np.save(f'data/{model}/{imageId}.np', attacked)
+            for model in models:
+                print('=' * 25)
+                print(f'Model: {model}')
+                print('=' * 25)
+                makedirs(f'data/{model}/', exist_ok=True)
+                makedirs(f'images/{model}/', exist_ok=True)
 
-            # smoothed = getSmoothedImage(np.array([attacked]))
-            # smoothedPrediction = np.argmax(models[model].predict(smoothed, verbose=0))
-            # plt.imsave(f'images/{model}/{imageId}_label_{smoothedPrediction}_smoothed.png', smoothed[0])
-            # np.save(f'data/{model}/{imageId}_smoothed.np', smoothed[0])
+                originalPrediction = np.argmax(models[model].predict(np.array([image]), verbose=0))
+                print(f'ImageId: {imageId}, Original: {originalPrediction},')
 
-            # noised, _ = GaussianNoise(np.array([attacked]), None, False)
-            # noisedPrediction = np.argmax(models[model].predict(noised, verbose=0))
-            # plt.imsave(f'images/{model}/{imageId}_label_{noisedPrediction}_noised.png', noised[0])
-            # np.save(f'data/{model}/{imageId}_noised.np', noised[0])
+                start_time = time.perf_counter_ns()
+                attacked = perturbImage(image, label, models[model])
+                end_time = time.perf_counter_ns()
+                attackedPrediction = np.argmax(models[model].predict(np.array([attacked]), verbose=0))
 
-            # print(f'Image: {imageId}, Label: {label}, Model: {model}, Original: {originalPrediction}, Attacked: {attackedPrediction}, Smoothed: {smoothedPrediction}, Noised: {noisedPrediction}')
+                plt.imsave(f'images/{model}/{imageId}_label_{attackedPrediction}.png', attacked)
+                np.save(f'data/{model}/{imageId}', attacked)
+
+                smoothed = getSmoothedImage(np.array([attacked]))
+                smoothedPrediction = np.argmax(models[model].predict(smoothed, verbose=0))
+                plt.imsave(f'images/{model}/{imageId}_label_{smoothedPrediction}_smoothed.png', smoothed[0])
+                np.save(f'data/{model}/{imageId}_smoothed', smoothed[0])
+
+                noised, _ = GaussianNoise(np.array([attacked]), None, False)
+                noisedPrediction = np.argmax(models[model].predict(noised, verbose=0))
+                plt.imsave(f'images/{model}/{imageId}_label_{noisedPrediction}_noised.png', noised[0])
+                np.save(f'data/{model}/{imageId}_noised', noised[0])
+
+                print(f'Image: {imageId}, Label: {label}, Model: {model}, Original: {originalPrediction}, Attacked: {attackedPrediction}, Smoothed: {smoothedPrediction}, Noised: {noisedPrediction}, Time: {((end_time - start_time) / 10**9):.2f}s ')
+                print(imageId, label, model, originalPrediction, attackedPrediction, smoothedPrediction, noisedPrediction, f'{((end_time - start_time) / 10**9):.2f}', file=results_csv, sep=',')
+            results_csv.flush()
 
 
 if __name__ == '__main__':
@@ -104,9 +111,7 @@ if __name__ == '__main__':
     VGG16Model_augmentation = loadModel('model/VGG16Model_augmented')
     CNNModel_gaussian = loadModel('model/CNNModel_gaussian')
     NiNModel_gaussian = loadModel('model/NiNModel_gaussian')
-    VGG16Model_gaussian = loadModel('model/VGG16Model_gaussian')  # Det gick inte att ladda in modellen
-
-    
+    VGG16Model_gaussian = loadModel('model/VGG16Model_gaussian')
 
     attack({
         'CNN': CNNModel,
@@ -118,5 +123,4 @@ if __name__ == '__main__':
         'CNN_Gaussian': CNNModel_gaussian,
         'NiN_Gaussian': NiNModel_gaussian,
         'VGG16_Gaussian': VGG16Model_gaussian
-
     }, test_data, test_labels)
