@@ -21,6 +21,7 @@ def perturbImage(image, label, model: models.Model):
         new_image = getPerturbImage(xk)
         res = model.predict(np.array([new_image]), verbose=0)[0]
         print(f'Best results so far: {res[label]*100:.1f}%')
+        return res[label] <= 0.05
         predicted = np.argmax(res)
         return predicted != label
 
