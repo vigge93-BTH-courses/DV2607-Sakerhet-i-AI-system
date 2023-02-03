@@ -1,7 +1,6 @@
-#from scipy.optimize import differential_evolution
-#from differential_evolution import differential_evolution
-from sci_differential_evolution import differential_evolution
+from scipy.optimize import differential_evolution
 import numpy as np
+from data import loadModel
 from keras import models
 
 
@@ -11,13 +10,22 @@ def perturbImage(image, label, model: models.Model):
         new_image[int(perturb[0])][int(perturb[1])] = (perturb[2], perturb[3], perturb[4])
         return new_image
 
-    def getModelStat(perturb):
-        new_image = getPerturbImage(perturb)
-        predictions = model.predict(np.array([new_image]), verbose=0)
-        return predictions[0][label]
+    getPerturbImage_vector = np.vectorize(getPerturbImage, signature='(n)->(k,k,m)')
+
+    def getModelStatVector(perturb):
+        new_images = getPerturbImage_vector(perturb.T)
+        predictions = model.predict(new_images, verbose=0)
+        return predictions[:, label]
+
+    def callback(xk, convergence):
+        new_image = getPerturbImage(xk)
+        res = model.predict(np.array([new_image]), verbose=0)[0]
+        print(f'Best results so far: {res[label]*100:.1f}%')
+        predicted = np.argmax(res)
+        return predicted != label
 
     bounds = [(0, 32), (0, 32), (0, 1), (0, 1), (0, 1)]
-    result = differential_evolution(func=getModelStat, bounds=bounds, maxiter=75, recombination=1, atol=-1, popsize=80, polish=False, disp=False)
+    result = differential_evolution(func=getModelStatVector, callback=callback, bounds=bounds, maxiter=100, recombination=1, atol=-1, popsize=80, polish=False, disp=False, vectorized=True)
 
     return getPerturbImage(result.x)
 
@@ -40,5 +48,5 @@ if __name__ == '__main__':
     post_attack = model.predict(np.array([attacked]))
     plt.imshow(attacked)
     plt.show()
-    print(f'Pre attack scores: {pre_attack[0]}, class: {np.argmax(pre_attack[0])}')
-    print(f'Pre attack scores: {post_attack[0]}, class: {np.argmax(post_attack[0])}')
+    print(f'Pre attack scores: {pre_attack[0].round(3)}, class: {np.argmax(pre_attack[0])}')
+    print(f'Pre attack scores: {post_attack[0].round(3)}, class: {np.argmax(post_attack[0])}')
