@@ -5,6 +5,7 @@ from keras import models
 
 
 def perturbImage(image, label, model: models.Model):
+    i = 1
     def getPerturbImage(perturb):
         new_image = image.copy()
         new_image[int(perturb[0])][int(perturb[1])] = (perturb[2], perturb[3], perturb[4])
@@ -18,9 +19,12 @@ def perturbImage(image, label, model: models.Model):
         return predictions[:, label]
 
     def callback(xk, convergence):
+        nonlocal i
         new_image = getPerturbImage(xk)
         res = model.predict(np.array([new_image]), verbose=0)[0]
-        print(f'Best results so far: {res[label]*100:.1f}%')
+        if i % 10 == 0 or res[label] <= 0.05:
+            print(f'Best results so far: {res[label]*100:.1f}%')
+        i += 1
         return res[label] <= 0.05
         predicted = np.argmax(res)
         return predicted != label

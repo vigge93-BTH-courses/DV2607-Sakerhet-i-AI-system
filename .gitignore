@@ -5,3 +5,4 @@ model/
 data/**/*.npy
 images/**/*.png
 results.csv
+attacked.csv

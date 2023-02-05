@@ -6,15 +6,22 @@ from data import getCifar10, saveModel, loadModel
 import numpy as np
 from defences import getSmoothedImage, ImageAugmentation, GaussianNoise
 import matplotlib.pyplot as plt
-from keras import models
+from keras import models, backend
 from os import makedirs
 import time
+import tensorflow as tf
 
 
 def attack(models: "dict[str, models.Model]", test_data: "np.ndarray", test_labels: "np.ndarray"):
+    with open('attacked.csv', 'r') as f:
+        attackedList = [int(row.strip()) for row in f]
+    mask = np.ones(len(test_labels), dtype=bool)
+    mask[attackedList] = False
+    test_data = test_data[mask]
+    test_labels = test_labels[mask]
     with open('results.csv', 'a') as results_csv:
         print('ImageId,Label,ModelName,OriginalPrediction,AttackedPrediction,SmoothedPrediction,NoisedPrediction,Time', file=results_csv)
-        for imageId in np.random.choice(np.arange(len(test_data)), size=100, replace=False):
+        for imageId in np.random.choice(np.arange(len(test_data)), size=1000, replace=False):
             image = test_data[imageId]
             label = np.argmax(test_labels[imageId])
 
@@ -55,7 +62,10 @@ def attack(models: "dict[str, models.Model]", test_data: "np.ndarray", test_labe
                 print(f'Image: {imageId}, Label: {label}, Model: {model}, Original: {originalPrediction}, Attacked: {attackedPrediction}, Smoothed: {smoothedPrediction}, Noised: {noisedPrediction}, Time: {((end_time - start_time) / 10**9):.2f}s ')
                 print(imageId, label, model, originalPrediction, attackedPrediction, smoothedPrediction, noisedPrediction, f'{((end_time - start_time) / 10**9):.2f}', file=results_csv, sep=',')
             results_csv.flush()
-
+            attackedList.append(imageId)
+            with open('attacked.csv', 'w') as f:
+                print(*attackedList, sep='\n', file=f)
+            backend.clear_session()  # Prevent memory leak?
 
 if __name__ == '__main__':
 
